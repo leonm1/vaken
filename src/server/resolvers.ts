@@ -2,7 +2,6 @@ import { UserInputError, AuthenticationError, ApolloError } from 'apollo-server-
 import { ObjectID, Collection, ObjectId, FilterQuery } from 'mongodb';
 import {
 	ApplicationFieldResolvers,
-	ApplicationQuestionResolvers,
 	HackerResolvers,
 	LoginResolvers,
 	MentorResolvers,
@@ -128,7 +127,6 @@ async function fetchUser(
 
 export interface Resolvers {
 	ApplicationField: Required<ApplicationFieldResolvers>;
-	ApplicationQuestion: Required<ApplicationQuestionResolvers>;
 	Hacker: Required<HackerResolvers>;
 	Login: Required<LoginResolvers>;
 	Mentor: Required<MentorResolvers>;
@@ -168,15 +166,11 @@ export const resolvers: Resolvers = {
 	 * These resolvers are for querying fields
 	 */
 	ApplicationField: {
-		answer: async field => (await field).answer || null,
+		answer: async field => (await field).answer,
 		createdAt: async field => (await field).createdAt.getTime(),
+		email: async field => (await field).email,
 		id: async field => (await field).id,
 		question: async field => (await field).question,
-	},
-	ApplicationQuestion: {
-		instruction: async question => (await question).instruction || null,
-		note: async question => (await question).note || null,
-		prompt: async question => (await question).prompt,
 	},
 	Hacker: {
 		...userResolvers,
@@ -196,6 +190,9 @@ export const resolvers: Resolvers = {
 		},
 		userType: () => UserType.Hacker,
 		volunteer: async hacker => (await hacker).volunteer || null,
+		application: async (hacker, args, { models }: Context) => {
+			return models.ApplicationFields.find({ email: (await hacker).email }).toArray();
+		},
 	},
 	Login: {
 		createdAt: async login => (await login).createdAt.getTime(),
@@ -295,6 +292,30 @@ export const resolvers: Resolvers = {
 
 			const ret = await models.Hackers.findOne({ email: user.email });
 			if (!ret) throw new AuthenticationError(`hacker not found: ${user.email}`);
+			return ret;
+		},
+		updateMyApplication: async (root, args, ctx: Context) => {
+			// Enables a user to update their application
+			if (!ctx.user) throw new AuthenticationError(`cannot update application: user not logged in`);
+			const { email } = ctx.user;
+			// update app answers if they exist
+			await Promise.all(
+				args.input.map(async ({ question, answer }) => {
+					const { value, lastErrorObject } = await ctx.models.ApplicationFields.findOneAndUpdate(
+						{ email, question },
+						{ $set: { answer, email, question } },
+						{ returnOriginal: false, upsert: true }
+					);
+					if (lastErrorObject || !value) {
+						throw new UserInputError(
+							`error inputting user application input ${JSON.stringify(lastErrorObject)}`
+						);
+					}
+					return value;
+				})
+			);
+			const ret = await ctx.models.Hackers.findOne({ email });
+			if (!ret) throw new AuthenticationError(`hacker not found: ${email}`);
 			return ret;
 		},
 		updateMyProfile: async (root, args, ctx: Context) => {
