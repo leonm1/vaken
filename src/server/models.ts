@@ -3,6 +3,7 @@ import {
 	ApplicationFieldDbObject,
 	ApplicationQuestionDbObject,
 	HackerDbObject,
+	SponsorDbObject,
 	LoginDbObject,
 	MentorDbObject,
 	OrganizerDbObject,
@@ -23,6 +24,7 @@ export interface Models {
 	Mentors: Collection<MentorDbObject>;
 	Organizers: Collection<OrganizerDbObject>;
 	Shifts: Collection<ShiftDbObject>;
+	Sponsors: Collection<SponsorDbObject>;
 	Teams: Collection<TeamDbObject>;
 	UserTeamIndicies: Collection<UserTeamIndexDbObject>;
 }
@@ -42,8 +44,9 @@ export const initDb = async (): Promise<Models> => {
 		Hackers: db.collection<HackerDbObject>('Hackers'),
 		Logins: db.collection<LoginDbObject>('logins'),
 		Mentors: db.collection<MentorDbObject>('mentors'),
-		Organizers: db.collection<OrganizerDbObject>('organizers'),
+		Organizers: db.collection<OrganizerDbObject>('Organizers'),
 		Shifts: db.collection<ShiftDbObject>('shifts'),
+		Sponsors: db.collection<SponsorDbObject>('Sponsors'),
 		Teams: db.collection<TeamDbObject>('teams'),
 		UserTeamIndicies: db.collection<UserTeamIndexDbObject>('userTeams'),
 	};

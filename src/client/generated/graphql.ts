@@ -189,6 +189,8 @@ export type Query = {
 	me?: Maybe<User>;
 	hacker: Hacker;
 	hackers: Array<Hacker>;
+	sponsor: Sponsor;
+	sponsors: Array<Sponsor>;
 	organizer: Organizer;
 	organizers: Array<Organizer>;
 	mentor: Mentor;
@@ -202,6 +204,14 @@ export type QueryHackerArgs = {
 };
 
 export type QueryHackersArgs = {
+	sortDirection?: Maybe<SortDirection>;
+};
+
+export type QuerySponsorArgs = {
+	id: Scalars['ID'];
+};
+
+export type QuerySponsorsArgs = {
 	sortDirection?: Maybe<SortDirection>;
 };
 
@@ -258,6 +268,24 @@ export enum SortDirection {
 	Desc = 'DESC',
 }
 
+export type Sponsor = User & {
+	__typename?: 'Sponsor';
+	id: Scalars['ID'];
+	createdAt: Scalars['Int'];
+	secondaryIds: Array<Scalars['ID']>;
+	logins: Array<Login>;
+	email: Scalars['String'];
+	firstName: Scalars['String'];
+	preferredName: Scalars['String'];
+	lastName: Scalars['String'];
+	shirtSize?: Maybe<ShirtSize>;
+	gender?: Maybe<Scalars['String']>;
+	dietaryRestrictions: Array<DietaryRestriction>;
+	userType: UserType;
+	phoneNumber?: Maybe<Scalars['String']>;
+	permissions: Array<Maybe<Scalars['String']>>;
+};
+
 export type Team = {
 	__typename?: 'Team';
 	id: Scalars['ID'];
@@ -309,7 +337,7 @@ export type MeQueryVariables = {};
 
 export type MeQuery = { __typename?: 'Query' } & {
 	me: Maybe<
-		{ __typename?: 'Hacker' | 'Organizer' | 'Mentor' } & Pick<
+		{ __typename?: 'Hacker' | 'Sponsor' | 'Organizer' | 'Mentor' } & Pick<
 			User,
 			'id' | 'firstName' | 'lastName' | 'userType' | 'email'
 		>
@@ -347,7 +375,7 @@ export type MyProfileQueryVariables = {};
 
 export type MyProfileQuery = { __typename?: 'Query' } & {
 	me: Maybe<
-		{ __typename?: 'Hacker' | 'Organizer' | 'Mentor' } & Pick<
+		{ __typename?: 'Hacker' | 'Sponsor' | 'Organizer' | 'Mentor' } & Pick<
 			User,
 			| 'id'
 			| 'firstName'
@@ -367,7 +395,7 @@ export type UpdateMyProfileMutationVariables = {
 };
 
 export type UpdateMyProfileMutation = { __typename?: 'Mutation' } & {
-	updateMyProfile: { __typename?: 'Hacker' | 'Organizer' | 'Mentor' } & Pick<
+	updateMyProfile: { __typename?: 'Hacker' | 'Sponsor' | 'Organizer' | 'Mentor' } & Pick<
 		User,
 		| 'id'
 		| 'firstName'
@@ -385,7 +413,7 @@ export type TeamQueryVariables = {};
 
 export type TeamQuery = { __typename?: 'Query' } & {
 	me: Maybe<
-		{ __typename?: 'Hacker' | 'Organizer' | 'Mentor' } & Pick<User, 'id'> &
+		{ __typename?: 'Hacker' | 'Sponsor' | 'Organizer' | 'Mentor' } & Pick<User, 'id'> &
 			({ __typename?: 'Hacker' } & {
 				team: Maybe<{ __typename?: 'Team' } & Pick<Team, 'id' | 'name' | 'memberIds' | 'size'>>;
 			})
@@ -454,6 +482,10 @@ export type TeamDbObject = {
 	createdAt: Date;
 	name?: Maybe<string>;
 	memberIds: Array<string>;
+};
+
+export type SponsorDbObject = UserDbInterface & {
+	permissions: Array<Maybe<string>>;
 };
 
 export type OrganizerDbObject = UserDbInterface & {

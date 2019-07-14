@@ -188,6 +188,8 @@ export type Query = {
 	me?: Maybe<User>;
 	hacker: Hacker;
 	hackers: Array<Hacker>;
+	sponsor: Sponsor;
+	sponsors: Array<Sponsor>;
 	organizer: Organizer;
 	organizers: Array<Organizer>;
 	mentor: Mentor;
@@ -201,6 +203,14 @@ export type QueryHackerArgs = {
 };
 
 export type QueryHackersArgs = {
+	sortDirection?: Maybe<SortDirection>;
+};
+
+export type QuerySponsorArgs = {
+	id: Scalars['ID'];
+};
+
+export type QuerySponsorsArgs = {
 	sortDirection?: Maybe<SortDirection>;
 };
 
@@ -256,6 +266,24 @@ export enum SortDirection {
 	Asc = 'ASC',
 	Desc = 'DESC',
 }
+
+export type Sponsor = User & {
+	__typename?: 'Sponsor';
+	id: Scalars['ID'];
+	createdAt: Scalars['Int'];
+	secondaryIds: Array<Scalars['ID']>;
+	logins: Array<Login>;
+	email: Scalars['String'];
+	firstName: Scalars['String'];
+	preferredName: Scalars['String'];
+	lastName: Scalars['String'];
+	shirtSize?: Maybe<ShirtSize>;
+	gender?: Maybe<Scalars['String']>;
+	dietaryRestrictions: Array<DietaryRestriction>;
+	userType: UserType;
+	phoneNumber?: Maybe<Scalars['String']>;
+	permissions: Array<Maybe<Scalars['String']>>;
+};
 
 export type Team = {
 	__typename?: 'Team';
@@ -378,6 +406,7 @@ export type ResolversTypes = {
 	Boolean: MaybePromise<Scalars['Boolean']>;
 	Team: MaybePromise<TeamDbObject>;
 	SortDirection: SortDirection;
+	Sponsor: MaybePromise<SponsorDbObject>;
 	Organizer: MaybePromise<OrganizerDbObject>;
 	Mentor: MaybePromise<MentorDbObject>;
 	Shift: MaybePromise<ShiftDbObject>;
@@ -590,6 +619,8 @@ export type QueryResolvers<ContextType = any, ParentType = ResolversTypes['Query
 	me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
 	hacker?: Resolver<ResolversTypes['Hacker'], ParentType, ContextType, QueryHackerArgs>;
 	hackers?: Resolver<Array<ResolversTypes['Hacker']>, ParentType, ContextType, QueryHackersArgs>;
+	sponsor?: Resolver<ResolversTypes['Sponsor'], ParentType, ContextType, QuerySponsorArgs>;
+	sponsors?: Resolver<Array<ResolversTypes['Sponsor']>, ParentType, ContextType, QuerySponsorsArgs>;
 	organizer?: Resolver<ResolversTypes['Organizer'], ParentType, ContextType, QueryOrganizerArgs>;
 	organizers?: Resolver<
 		Array<ResolversTypes['Organizer']>,
@@ -608,6 +639,27 @@ export type ShiftResolvers<ContextType = any, ParentType = ResolversTypes['Shift
 	end?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 };
 
+export type SponsorResolvers<ContextType = any, ParentType = ResolversTypes['Sponsor']> = {
+	id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+	createdAt?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+	secondaryIds?: Resolver<Array<ResolversTypes['ID']>, ParentType, ContextType>;
+	logins?: Resolver<Array<ResolversTypes['Login']>, ParentType, ContextType>;
+	email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+	firstName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+	preferredName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+	lastName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+	shirtSize?: Resolver<Maybe<ResolversTypes['ShirtSize']>, ParentType, ContextType>;
+	gender?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+	dietaryRestrictions?: Resolver<
+		Array<ResolversTypes['DietaryRestriction']>,
+		ParentType,
+		ContextType
+	>;
+	userType?: Resolver<ResolversTypes['UserType'], ParentType, ContextType>;
+	phoneNumber?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+	permissions?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+};
+
 export type TeamResolvers<ContextType = any, ParentType = ResolversTypes['Team']> = {
 	id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
 	createdAt?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -617,7 +669,11 @@ export type TeamResolvers<ContextType = any, ParentType = ResolversTypes['Team']
 };
 
 export type UserResolvers<ContextType = any, ParentType = ResolversTypes['User']> = {
-	__resolveType: TypeResolveFn<'Hacker' | 'Organizer' | 'Mentor', ParentType, ContextType>;
+	__resolveType: TypeResolveFn<
+		'Hacker' | 'Sponsor' | 'Organizer' | 'Mentor',
+		ParentType,
+		ContextType
+	>;
 	id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
 	createdAt?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 	secondaryIds?: Resolver<Array<ResolversTypes['ID']>, ParentType, ContextType>;
@@ -647,6 +703,7 @@ export type Resolvers<ContextType = any> = {
 	Organizer?: OrganizerResolvers<ContextType>;
 	Query?: QueryResolvers<ContextType>;
 	Shift?: ShiftResolvers<ContextType>;
+	Sponsor?: SponsorResolvers<ContextType>;
 	Team?: TeamResolvers<ContextType>;
 	User?: UserResolvers;
 };
@@ -715,6 +772,10 @@ export type TeamDbObject = {
 	createdAt: Date;
 	name?: Maybe<string>;
 	memberIds: Array<string>;
+};
+
+export type SponsorDbObject = UserDbInterface & {
+	permissions: Array<Maybe<string>>;
 };
 
 export type OrganizerDbObject = UserDbInterface & {

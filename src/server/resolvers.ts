@@ -21,6 +21,7 @@ import {
 	UserInput,
 	Gender,
 	UserResolvers,
+	SponsorResolvers,
 } from './generated/graphql';
 import Context from './context';
 import { Models } from './models';
@@ -64,7 +65,7 @@ async function query<T>(filter: FilterQuery<T>, model: Collection<T>): Promise<T
 	if (!obj)
 		throw new UserInputError(
 			`obj with filters: "${JSON.stringify(filter)}" not found in collection "${
-				model.collectionName
+			model.collectionName
 			}"`
 		);
 	return obj;
@@ -101,6 +102,15 @@ async function updateUser(
 		if (!value) throw new UserInputError(`user ${user.email} not found`);
 		return value;
 	}
+	if (user.userType === UserType.Sponsor) {
+		const { value } = await models.Sponsors.findOneAndUpdate(
+			{ email: user.email },
+			{ $set: newValues },
+			{ returnOriginal: false }
+		);
+		if (!value) throw new UserInputError(`user ${user.email} not found`);
+		return value;
+	}
 	if (user.userType === UserType.Organizer) {
 		const { value } = await models.Organizers.findOneAndUpdate(
 			{ email: user.email },
@@ -120,6 +130,9 @@ async function fetchUser(
 	if (userType === UserType.Hacker) {
 		return query({ email }, models.Hackers);
 	}
+	if (userType === UserType.Sponsor) {
+		return query({ email }, models.Sponsors);
+	}
 	if (userType === UserType.Organizer) {
 		return query({ email }, models.Organizers);
 	}
@@ -136,6 +149,7 @@ export interface Resolvers {
 	Organizer: Required<OrganizerResolvers>;
 	Query: Required<QueryResolvers>;
 	Shift: Required<ShiftResolvers>;
+	Sponsor: Required<SponsorResolvers>;
 	Team: Required<TeamResolvers>;
 	User: {
 		__resolveType: (user: UserDbInterface) => 'Hacker' | 'Organizer' | 'Mentor';
@@ -335,12 +349,19 @@ export const resolvers: Resolvers = {
 		mentors: async (root, args, ctx: Context) => ctx.models.Mentors.find().toArray(),
 		organizer: async (root, { id }, ctx: Context) => queryById(id, ctx.models.Organizers),
 		organizers: async (root, args, ctx: Context) => ctx.models.Organizers.find().toArray(),
+		sponsor: async (root, { id }, ctx: Context) => queryById(id, ctx.models.Sponsors),
+		sponsors: async (root, args, ctx: Context) => ctx.models.Sponsors.find().toArray(),
 		team: async (root, { id }, ctx: Context) => queryById(id, ctx.models.Teams),
 		teams: async (root, args, ctx: Context) => ctx.models.Teams.find().toArray(),
 	},
 	Shift: {
 		begin: async shift => (await shift).begin.getTime(),
 		end: async shift => (await shift).end.getTime(),
+	},
+	Sponsor: {
+		...userResolvers,
+		permissions: async sponsor => (await sponsor).permissions,
+		userType: () => UserType.Sponsor,
 	},
 	Team: {
 		createdAt: async team => (await team).createdAt.getTime(),
@@ -354,6 +375,8 @@ export const resolvers: Resolvers = {
 			switch (user.userType) {
 				case UserType.Hacker:
 					return 'Hacker';
+				case UserType.Sponsor:
+					return 'Sponsor';
 				case UserType.Organizer:
 					return 'Organizer';
 				default:

@@ -164,6 +164,23 @@ export default gql`
 		size: Int!
 	}
 
+	type Sponsor implements User @entity {
+		id: ID!
+		createdAt: Int!
+		secondaryIds: [ID!]!
+		logins: [Login!]!
+		email: String!
+		firstName: String!
+		preferredName: String!
+		lastName: String!
+		shirtSize: ShirtSize
+		gender: String
+		dietaryRestrictions: [DietaryRestriction!]!
+		userType: UserType!
+		phoneNumber: String
+		permissions: [String]! @column
+	}
+
 	type Organizer implements User @entity {
 		id: ID!
 		createdAt: Int!
@@ -185,6 +202,8 @@ export default gql`
 		me: User # May be used when not logged in.
 		hacker(id: ID!): Hacker!
 		hackers(sortDirection: SortDirection): [Hacker!]!
+		sponsor(id: ID!): Sponsor!
+		sponsors(sortDirection: SortDirection): [Sponsor!]!
 		organizer(id: ID!): Organizer!
 		organizers(sortDirection: SortDirection): [Organizer!]!
 		mentor(id: ID!): Mentor!

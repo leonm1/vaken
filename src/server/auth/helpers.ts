@@ -6,7 +6,7 @@ import modelsPromise from '../models';
 import logger from '../logger';
 
 export async function getUserFromDb(email: string, userType?: string): Promise<UserDbInterface> {
-	const { Hackers, Organizers } = await modelsPromise;
+	const { Hackers, Organizers, Sponsors } = await modelsPromise;
 
 	let user: UserDbInterface | null = null;
 	switch (userType) {
@@ -15,6 +15,9 @@ export async function getUserFromDb(email: string, userType?: string): Promise<U
 			break;
 		case UserType.Organizer:
 			user = await Organizers.findOne({ email });
+			break;
+		case UserType.Sponsor:
+			user = await Sponsors.findOne({ email });
 			break;
 		default:
 			throw new Error(`invalid userType '${userType}'`);
@@ -68,8 +71,7 @@ export const verifyCallback = async (profile: Profile, done: VerifyCallback): Pr
 				userType: UserType.Hacker,
 			});
 		}
-
-		const user = await getUserFromDb(email, userType || UserType.Hacker);
+		const user = await getUserFromDb(email, userType || UserType.Organizer);
 		return void done(null, user);
 	} catch (err) {
 		return void done(err);
