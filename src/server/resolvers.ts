@@ -22,6 +22,7 @@ import {
 	Gender,
 	UserResolvers,
 	SponsorResolvers,
+	Omit,
 } from './generated/graphql';
 import Context from './context';
 import { Models } from './models';
