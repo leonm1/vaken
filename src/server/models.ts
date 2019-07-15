@@ -41,12 +41,12 @@ export const initDb = async (): Promise<Models> => {
 		 */
 		ApplicationFields: db.collection<ApplicationFieldDbObject>('applicationFields'),
 		ApplicationQuestions: db.collection<ApplicationQuestionDbObject>('applicationQuestions'),
-		Hackers: db.collection<HackerDbObject>('Hackers'),
+		Hackers: db.collection<HackerDbObject>('hackers'),
 		Logins: db.collection<LoginDbObject>('logins'),
 		Mentors: db.collection<MentorDbObject>('mentors'),
-		Organizers: db.collection<OrganizerDbObject>('Organizers'),
+		Organizers: db.collection<OrganizerDbObject>('organizers'),
 		Shifts: db.collection<ShiftDbObject>('shifts'),
-		Sponsors: db.collection<SponsorDbObject>('Sponsors'),
+		Sponsors: db.collection<SponsorDbObject>('sponsors'),
 		Teams: db.collection<TeamDbObject>('teams'),
 		UserTeamIndicies: db.collection<UserTeamIndexDbObject>('userTeams'),
 	};

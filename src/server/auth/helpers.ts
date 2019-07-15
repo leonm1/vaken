@@ -71,7 +71,7 @@ export const verifyCallback = async (profile: Profile, done: VerifyCallback): Pr
 				userType: UserType.Hacker,
 			});
 		}
-		const user = await getUserFromDb(email, userType || UserType.Organizer);
+		const user = await getUserFromDb(email, userType || UserType.Hacker);
 		return void done(null, user);
 	} catch (err) {
 		return void done(err);
