@@ -53,7 +53,6 @@ module.exports = {
 			2,
 			{ devDependencies: ['**/*.test.tsx', '**/*.test.ts'] },
 		],
-		'prettier/prettier': 0
 	},
 	root: true,
 	overrides: [
