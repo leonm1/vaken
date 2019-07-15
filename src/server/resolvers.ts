@@ -63,11 +63,10 @@ function toApplicationStatusEnum(status: string): ApplicationStatus {
 
 async function query<T>(filter: FilterQuery<T>, model: Collection<T>): Promise<T> {
 	const obj = await model.findOne(filter);
-	// prettier-ignore
 	if (!obj)
 		throw new UserInputError(
 			`obj with filters: "${JSON.stringify(filter)}" not found in collection "${
-			model.collectionName
+				model.collectionName
 			}"`
 		);
 	return obj;
