@@ -152,7 +152,7 @@ export interface Resolvers {
 	Sponsor: Required<SponsorResolvers>;
 	Team: Required<TeamResolvers>;
 	User: {
-		__resolveType: (user: UserDbInterface) => 'Hacker' | 'Organizer' | 'Mentor';
+		__resolveType: (user: UserDbInterface) => 'Hacker' | 'Organizer' | 'Mentor' | 'Sponsor';
 	};
 }
 
