@@ -63,6 +63,8 @@ export const resolvers: CustomResolvers<Context> = {
 		...userResolvers,
 		adult: async hacker => (await hacker).adult || null,
 		gender: async hacker => (await hacker).gender || null,
+		applicationQuestions: async (hacker, args, { models }) =>
+			models.ApplicationFields.find({ userID: (await hacker)._id }).toArray(),
 		github: async hacker => (await hacker).github || null,
 		gradYear: async hacker => (await hacker).gradYear || null,
 		majors: async hacker => (await hacker).majors || [],
@@ -115,12 +117,12 @@ export const resolvers: CustomResolvers<Context> = {
 			checkIsAuthorized(UserType.Organizer, user);
 			const objectIds = ids.map(id => ObjectID.createFromHexString(id));
 			const { result } = await models.Hackers.updateMany(
-				{ $in: { _id: objectIds } },
+				{ _id: { $in: objectIds } },
 				{ $set: { status } }
 			);
 			if (!result.ok) throw new UserInputError(`!ok updating ${JSON.stringify(ids)}}`);
 
-			return models.Hackers.find({ $in: { _id: objectIds } }).toArray();
+			return models.Hackers.find({ _id: { $in: objectIds } }).toArray();
 		},
 		joinTeam: async (root, { input: { name } }, { models, user }) => {
 			const hacker = checkIsAuthorized(UserType.Hacker, user);
