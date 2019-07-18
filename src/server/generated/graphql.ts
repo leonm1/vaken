@@ -47,6 +47,11 @@ export enum AuthLevel {
 	Sponsor = 'SPONSOR',
 }
 
+export type CreateSponsorInput = {
+	email: Scalars['String'];
+	name: Scalars['String'];
+};
+
 export enum DietaryRestriction {
 	Vegetarian = 'VEGETARIAN',
 	Vegan = 'VEGAN',
@@ -136,12 +141,18 @@ export type Mentor = User & {
 
 export type Mutation = {
 	__typename?: 'Mutation';
+	createSponsor: Sponsor;
 	updateMyProfile: User;
 	updateProfile: User;
 	joinTeam: Hacker;
 	leaveTeam: Hacker;
 	hackerStatus: Hacker;
 	hackerStatuses: Array<Hacker>;
+	sponsorStatus: Sponsor;
+};
+
+export type MutationCreateSponsorArgs = {
+	input: CreateSponsorInput;
 };
 
 export type MutationUpdateMyProfileArgs = {
@@ -163,6 +174,10 @@ export type MutationHackerStatusArgs = {
 
 export type MutationHackerStatusesArgs = {
 	input: HackerStatusesInput;
+};
+
+export type MutationSponsorStatusArgs = {
+	input: SponsorStatusInput;
 };
 
 export type Organizer = User & {
@@ -278,11 +293,22 @@ export type Sponsor = User & {
 	preferredName: Scalars['String'];
 	lastName: Scalars['String'];
 	shirtSize?: Maybe<ShirtSize>;
+	status: SponsorStatus;
 	gender?: Maybe<Scalars['String']>;
 	dietaryRestrictions: Array<DietaryRestriction>;
 	userType: UserType;
 	phoneNumber?: Maybe<Scalars['String']>;
 	permissions: Array<Maybe<Scalars['String']>>;
+};
+
+export enum SponsorStatus {
+	Added = 'ADDED',
+	Created = 'CREATED',
+}
+
+export type SponsorStatusInput = {
+	email: Scalars['String'];
+	status: SponsorStatus;
 };
 
 export type Team = {
@@ -407,14 +433,17 @@ export type ResolversTypes = {
 	Team: MaybePromise<TeamDbObject>;
 	SortDirection: SortDirection;
 	Sponsor: MaybePromise<SponsorDbObject>;
+	SponsorStatus: SponsorStatus;
 	Organizer: MaybePromise<OrganizerDbObject>;
 	Mentor: MaybePromise<MentorDbObject>;
 	Shift: MaybePromise<ShiftDbObject>;
 	Mutation: MaybePromise<{}>;
+	createSponsorInput: CreateSponsorInput;
 	UserInput: UserInput;
 	TeamInput: TeamInput;
 	HackerStatusInput: HackerStatusInput;
 	HackerStatusesInput: HackerStatusesInput;
+	SponsorStatusInput: SponsorStatusInput;
 	AuthLevel: AuthLevel;
 	Gender: Gender;
 	ApplicationQuestion: MaybePromise<ApplicationQuestionDbObject>;
@@ -566,6 +595,12 @@ export type MentorResolvers<ContextType = any, ParentType = ResolversTypes['Ment
 };
 
 export type MutationResolvers<ContextType = any, ParentType = ResolversTypes['Mutation']> = {
+	createSponsor?: Resolver<
+		ResolversTypes['Sponsor'],
+		ParentType,
+		ContextType,
+		MutationCreateSponsorArgs
+	>;
 	updateMyProfile?: Resolver<
 		ResolversTypes['User'],
 		ParentType,
@@ -591,6 +626,12 @@ export type MutationResolvers<ContextType = any, ParentType = ResolversTypes['Mu
 		ParentType,
 		ContextType,
 		MutationHackerStatusesArgs
+	>;
+	sponsorStatus?: Resolver<
+		ResolversTypes['Sponsor'],
+		ParentType,
+		ContextType,
+		MutationSponsorStatusArgs
 	>;
 };
 
@@ -649,6 +690,7 @@ export type SponsorResolvers<ContextType = any, ParentType = ResolversTypes['Spo
 	preferredName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 	lastName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 	shirtSize?: Resolver<Maybe<ResolversTypes['ShirtSize']>, ParentType, ContextType>;
+	status?: Resolver<ResolversTypes['SponsorStatus'], ParentType, ContextType>;
 	gender?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 	dietaryRestrictions?: Resolver<
 		Array<ResolversTypes['DietaryRestriction']>,

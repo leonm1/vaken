@@ -68,6 +68,11 @@ export default gql`
 		REJECTED
 	}
 
+	enum SponsorStatus {
+		ADDED
+		CREATED
+	}
+
 	enum LoginProvider {
 		GITHUB
 		GOOGLE
@@ -174,6 +179,7 @@ export default gql`
 		preferredName: String!
 		lastName: String!
 		shirtSize: ShirtSize
+		status: SponsorStatus!
 		gender: String
 		dietaryRestrictions: [DietaryRestriction!]!
 		userType: UserType!
@@ -237,12 +243,24 @@ export default gql`
 		status: ApplicationStatus!
 	}
 
+	input createSponsorInput {
+		email: String!
+		name: String!
+	}
+
+	input SponsorStatusInput {
+		email: String!
+		status: SponsorStatus!
+	}
+
 	type Mutation {
+		createSponsor(input: createSponsorInput!): Sponsor!
 		updateMyProfile(input: UserInput!): User!
 		updateProfile(id: ID!, input: UserInput!): User!
 		joinTeam(input: TeamInput!): Hacker!
 		leaveTeam: Hacker!
 		hackerStatus(input: HackerStatusInput!): Hacker!
 		hackerStatuses(input: HackerStatusesInput!): [Hacker!]!
+		sponsorStatus(input: SponsorStatusInput!): Sponsor!
 	}
 `;

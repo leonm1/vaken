@@ -1,9 +1,10 @@
 import { VerifyCallback } from 'passport-oauth2';
 import { Profile } from 'passport';
 import { ObjectID } from 'mongodb';
-import { UserDbInterface, UserType, ApplicationStatus } from '../generated/graphql';
+import { UserDbInterface, UserType, ApplicationStatus, SponsorStatus } from '../generated/graphql';
 import modelsPromise from '../models';
 import logger from '../logger';
+import { useSponsorStatusMutation } from '../../client/generated/graphql';
 
 export async function getUserFromDb(email: string, userType?: string): Promise<UserDbInterface> {
 	const { Hackers, Organizers, Sponsors } = await modelsPromise;
@@ -31,8 +32,8 @@ export async function getUserFromDb(email: string, userType?: string): Promise<U
 }
 
 export const verifyCallback = async (profile: Profile, done: VerifyCallback): Promise<void> => {
-	const { Logins, Hackers } = await modelsPromise;
-	const { userType } = (await Logins.findOne({
+	const { Logins, Hackers, Sponsors } = await modelsPromise;
+	let { userType } = (await Logins.findOne({
 		provider: profile.provider,
 		token: profile.id,
 	})) || { userType: null };
@@ -44,32 +45,54 @@ export const verifyCallback = async (profile: Profile, done: VerifyCallback): Pr
 		}
 
 		if (userType == null) {
-			await Logins.insertOne({
-				createdAt: new Date(),
-				email,
-				provider: profile.provider,
-				token: profile.id,
-				userType: UserType.Hacker,
-			});
+			// before checking hacker check if it is a whitelist sponsor
+			const verifySponsor = await Sponsors.findOne({ email });
+			if (verifySponsor != null) {
+				// it is a sponsor and change the status of the sponsor
+				await Logins.insertOne({
+					createdAt: new Date(),
+					email,
+					provider: profile.provider,
+					token: profile.id,
+					userType: UserType.Sponsor,
+				});
+				// useSponsorStatusMutation({
+				// 	variables: { input: { email, status: SponsorStatus.Created } }
+				// });
+				await Sponsors.findOneAndUpdate(
+					{ email },
+					{ $set: { status: SponsorStatus.Created } },
+					{ returnOriginal: false }
+				);
+				userType = UserType.Sponsor;
+			} else {
+				await Logins.insertOne({
+					createdAt: new Date(),
+					email,
+					provider: profile.provider,
+					token: profile.id,
+					userType: UserType.Hacker,
+				});
 
-			logger.info(`inserting user ${email}`);
-			await Hackers.insertOne({
-				_id: new ObjectID(),
-				createdAt: new Date(),
-				dietaryRestrictions: [],
-				email,
-				firstName: 'New',
-				lastName: 'User',
-				logins: [],
-				majors: [],
-				modifiedAt: new Date().getTime(),
-				phoneNumber: '',
-				preferredName: '',
-				race: [],
-				secondaryIds: [],
-				status: ApplicationStatus.Created,
-				userType: UserType.Hacker,
-			});
+				logger.info(`inserting user ${email}`);
+				await Hackers.insertOne({
+					_id: new ObjectID(),
+					createdAt: new Date(),
+					dietaryRestrictions: [],
+					email,
+					firstName: 'New',
+					lastName: 'User',
+					logins: [],
+					majors: [],
+					modifiedAt: new Date().getTime(),
+					phoneNumber: '',
+					preferredName: '',
+					race: [],
+					secondaryIds: [],
+					status: ApplicationStatus.Created,
+					userType: UserType.Hacker,
+				});
+			}
 		}
 		const user = await getUserFromDb(email, userType || UserType.Hacker);
 		return void done(null, user);

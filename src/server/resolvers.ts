@@ -23,9 +23,11 @@ import {
 	UserResolvers,
 	SponsorResolvers,
 	Omit,
+	SponsorStatus,
 } from './generated/graphql';
 import Context from './context';
 import { Models } from './models';
+// import { async } from 'q';
 
 function toDietEnum(restriction: string): DietaryRestriction {
 	if (!Object.values(DietaryRestriction).includes(restriction))
@@ -61,12 +63,18 @@ function toApplicationStatusEnum(status: string): ApplicationStatus {
 	return status as ApplicationStatus;
 }
 
+function toSponsorStatusEnum(status: string): SponsorStatus {
+	if (!Object.values(SponsorStatus).includes(status))
+		throw new UserInputError(`Invalid sponsor status: ${status}`);
+	return status as SponsorStatus;
+}
+
 async function query<T>(filter: FilterQuery<T>, model: Collection<T>): Promise<T> {
 	const obj = await model.findOne(filter);
 	if (!obj)
 		throw new UserInputError(
 			`obj with filters: "${JSON.stringify(filter)}" not found in collection "${
-				model.collectionName
+			model.collectionName
 			}"`
 		);
 	return obj;
@@ -234,6 +242,33 @@ export const resolvers: Resolvers = {
 	 * Each may contain  authentication checks as well
 	 */
 	Mutation: {
+		createSponsor: async (root, { input: { email, name } }, { models, user }: Context) => {
+			if (!user || user.userType !== UserType.Organizer)
+				throw new AuthenticationError(`user '${JSON.stringify(user)}' must be organizer`);
+			const sponsor = await models.Sponsors.findOne({ email });
+			if (!sponsor) {
+				await models.Sponsors.insertOne({
+					_id: new ObjectID(),
+					createdAt: new Date(),
+					dietaryRestrictions: [],
+					email,
+					firstName: name,
+					lastName: '',
+					logins: [],
+					permissions: [],
+					phoneNumber: '',
+					preferredName: '',
+					secondaryIds: [],
+					status: SponsorStatus.Added,
+					userType: UserType.Sponsor,
+				});
+			} else {
+				throw new UserInputError(`sponsor with '${email}' is already added.`);
+			}
+			const sponsorCreated = await models.Sponsors.findOne({ email });
+			if (!sponsorCreated) throw new AuthenticationError(`sponsor not found: ${email}`);
+			return sponsorCreated;
+		},
 		hackerStatus: async (_, { input: { id, status } }, { user, models }: Context) => {
 			if (!user || user.userType !== UserType.Organizer)
 				throw new AuthenticationError(`user ${JSON.stringify(user)} must be an organizer`);
@@ -312,6 +347,16 @@ export const resolvers: Resolvers = {
 			if (!ret) throw new AuthenticationError(`hacker not found: ${user.email}`);
 			return ret;
 		},
+		sponsorStatus: async (_, { input: { email, status } }, { models }: Context) => {
+			const { ok, value, lastErrorObject: err } = await models.Sponsors.findOneAndUpdate(
+				{ email: email },
+				{ $set: { status } },
+				{ returnOriginal: false }
+			);
+			if (!ok || err || !value)
+				throw new UserInputError(`user ${email} (${value}) error: ${JSON.stringify(err)}`);
+			return value;
+		},
 		updateMyProfile: async (root, args, ctx: Context) => {
 			// Enables a user to update their own profile
 			if (!ctx.user) throw new AuthenticationError(`cannot update profile: user not logged in`);
@@ -362,6 +407,7 @@ export const resolvers: Resolvers = {
 	Sponsor: {
 		...userResolvers,
 		permissions: async sponsor => (await sponsor).permissions,
+		status: async sponsor => toSponsorStatusEnum((await sponsor).status),
 		userType: () => UserType.Sponsor,
 	},
 	Team: {

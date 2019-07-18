@@ -48,6 +48,11 @@ export enum AuthLevel {
 	Sponsor = 'SPONSOR',
 }
 
+export type CreateSponsorInput = {
+	email: Scalars['String'];
+	name: Scalars['String'];
+};
+
 export enum DietaryRestriction {
 	Vegetarian = 'VEGETARIAN',
 	Vegan = 'VEGAN',
@@ -137,12 +142,18 @@ export type Mentor = User & {
 
 export type Mutation = {
 	__typename?: 'Mutation';
+	createSponsor: Sponsor;
 	updateMyProfile: User;
 	updateProfile: User;
 	joinTeam: Hacker;
 	leaveTeam: Hacker;
 	hackerStatus: Hacker;
 	hackerStatuses: Array<Hacker>;
+	sponsorStatus: Sponsor;
+};
+
+export type MutationCreateSponsorArgs = {
+	input: CreateSponsorInput;
 };
 
 export type MutationUpdateMyProfileArgs = {
@@ -164,6 +175,10 @@ export type MutationHackerStatusArgs = {
 
 export type MutationHackerStatusesArgs = {
 	input: HackerStatusesInput;
+};
+
+export type MutationSponsorStatusArgs = {
+	input: SponsorStatusInput;
 };
 
 export type Organizer = User & {
@@ -279,11 +294,22 @@ export type Sponsor = User & {
 	preferredName: Scalars['String'];
 	lastName: Scalars['String'];
 	shirtSize?: Maybe<ShirtSize>;
+	status: SponsorStatus;
 	gender?: Maybe<Scalars['String']>;
 	dietaryRestrictions: Array<DietaryRestriction>;
 	userType: UserType;
 	phoneNumber?: Maybe<Scalars['String']>;
 	permissions: Array<Maybe<Scalars['String']>>;
+};
+
+export enum SponsorStatus {
+	Added = 'ADDED',
+	Created = 'CREATED',
+}
+
+export type SponsorStatusInput = {
+	email: Scalars['String'];
+	status: SponsorStatus;
 };
 
 export type Team = {
@@ -369,6 +395,30 @@ export type HackerStatusesMutationVariables = {
 
 export type HackerStatusesMutation = { __typename?: 'Mutation' } & {
 	hackerStatuses: Array<{ __typename?: 'Hacker' } & Pick<Hacker, 'id' | 'status'>>;
+};
+
+export type SponsorQueryVariables = {};
+
+export type SponsorQuery = { __typename?: 'Query' } & {
+	me: Maybe<
+		{ __typename?: 'Hacker' | 'Sponsor' | 'Organizer' | 'Mentor' } & Pick<User, 'id' | 'email'>
+	>;
+};
+
+export type SponsorStatusMutationVariables = {
+	input: SponsorStatusInput;
+};
+
+export type SponsorStatusMutation = { __typename?: 'Mutation' } & {
+	sponsorStatus: { __typename?: 'Sponsor' } & Pick<Sponsor, 'id' | 'status'>;
+};
+
+export type CreateSponsorMutationVariables = {
+	input: CreateSponsorInput;
+};
+
+export type CreateSponsorMutation = { __typename?: 'Mutation' } & {
+	createSponsor: { __typename?: 'Sponsor' } & Pick<Sponsor, 'id' | 'email'>;
 };
 
 export type MyProfileQueryVariables = {};
@@ -597,6 +647,71 @@ export function useHackerStatusesMutation(
 ) {
 	return ReactApolloHooks.useMutation<HackerStatusesMutation, HackerStatusesMutationVariables>(
 		HackerStatusesDocument,
+		baseOptions
+	);
+}
+export const SponsorDocument = gql`
+	query sponsor {
+		me {
+			id
+			email
+		}
+	}
+`;
+
+export function useSponsorQuery(
+	baseOptions?: ReactApolloHooks.QueryHookOptions<SponsorQueryVariables>
+) {
+	return ReactApolloHooks.useQuery<SponsorQuery, SponsorQueryVariables>(
+		SponsorDocument,
+		baseOptions
+	);
+}
+export const SponsorStatusDocument = gql`
+	mutation sponsorStatus($input: SponsorStatusInput!) {
+		sponsorStatus(input: $input) {
+			id
+			status
+		}
+	}
+`;
+export type SponsorStatusMutationFn = ReactApollo.MutationFn<
+	SponsorStatusMutation,
+	SponsorStatusMutationVariables
+>;
+
+export function useSponsorStatusMutation(
+	baseOptions?: ReactApolloHooks.MutationHookOptions<
+		SponsorStatusMutation,
+		SponsorStatusMutationVariables
+	>
+) {
+	return ReactApolloHooks.useMutation<SponsorStatusMutation, SponsorStatusMutationVariables>(
+		SponsorStatusDocument,
+		baseOptions
+	);
+}
+export const CreateSponsorDocument = gql`
+	mutation createSponsor($input: createSponsorInput!) {
+		createSponsor(input: $input) {
+			id
+			email
+		}
+	}
+`;
+export type CreateSponsorMutationFn = ReactApollo.MutationFn<
+	CreateSponsorMutation,
+	CreateSponsorMutationVariables
+>;
+
+export function useCreateSponsorMutation(
+	baseOptions?: ReactApolloHooks.MutationHookOptions<
+		CreateSponsorMutation,
+		CreateSponsorMutationVariables
+	>
+) {
+	return ReactApolloHooks.useMutation<CreateSponsorMutation, CreateSponsorMutationVariables>(
+		CreateSponsorDocument,
 		baseOptions
 	);
 }
