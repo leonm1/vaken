@@ -179,7 +179,7 @@ export default gql`
 		preferredName: String!
 		lastName: String!
 		shirtSize: ShirtSize
-		status: SponsorStatus!
+		status: SponsorStatus! @column
 		gender: String
 		dietaryRestrictions: [DietaryRestriction!]!
 		userType: UserType!

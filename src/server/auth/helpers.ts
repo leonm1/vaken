@@ -4,7 +4,7 @@ import { ObjectID } from 'mongodb';
 import { UserDbInterface, UserType, ApplicationStatus, SponsorStatus } from '../generated/graphql';
 import modelsPromise from '../models';
 import logger from '../logger';
-import { useSponsorStatusMutation } from '../../client/generated/graphql';
+// import { useSponsorStatusMutation } from '../../client/generated/graphql';
 
 export async function getUserFromDb(email: string, userType?: string): Promise<UserDbInterface> {
 	const { Hackers, Organizers, Sponsors } = await modelsPromise;

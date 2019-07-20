@@ -535,6 +535,7 @@ export type TeamDbObject = {
 };
 
 export type SponsorDbObject = UserDbInterface & {
+	status: string;
 	permissions: Array<Maybe<string>>;
 };
 

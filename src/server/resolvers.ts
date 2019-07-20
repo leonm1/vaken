@@ -349,7 +349,7 @@ export const resolvers: Resolvers = {
 		},
 		sponsorStatus: async (_, { input: { email, status } }, { models }: Context) => {
 			const { ok, value, lastErrorObject: err } = await models.Sponsors.findOneAndUpdate(
-				{ email: email },
+				{ email },
 				{ $set: { status } },
 				{ returnOriginal: false }
 			);
