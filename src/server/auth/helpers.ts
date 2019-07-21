@@ -52,6 +52,7 @@ export const verifyCallback = async (profile: Profile, done: VerifyCallback): Pr
 			logger.info(`inserting user ${email}`);
 			await Hackers.insertOne({
 				_id: new ObjectID(),
+				application: [],
 				createdAt: new Date(),
 				dietaryRestrictions: [],
 				email,
