@@ -72,7 +72,7 @@ async function query<T>(filter: FilterQuery<T>, model: Collection<T>): Promise<T
 	if (!obj)
 		throw new UserInputError(
 			`obj with filters: "${JSON.stringify(filter)}" not found in collection "${
-			model.collectionName
+				model.collectionName
 			}"`
 		);
 	return obj;
