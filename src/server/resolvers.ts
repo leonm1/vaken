@@ -3,6 +3,7 @@ import { ObjectID, Collection, ObjectId, FilterQuery } from 'mongodb';
 import {
 	ApplicationFieldResolvers,
 	ApplicationQuestionResolvers,
+	EventResolvers,
 	HackerResolvers,
 	LoginResolvers,
 	MentorResolvers,
@@ -16,6 +17,7 @@ import {
 	ShirtSize,
 	LoginProvider,
 	ApplicationStatus,
+	EventType,
 	UserDbInterface,
 	MutationResolvers,
 	UserInput,
@@ -59,12 +61,18 @@ function toApplicationStatusEnum(status: string): ApplicationStatus {
 	return status as ApplicationStatus;
 }
 
+function toEventTypeEnum(event: string): EventType {
+	if (!Object.values(EventType).includes(event))
+		throw new UserInputError(`Invalid event type: ${event}`);
+	return event as EventType;
+}
+
 async function query<T>(filter: FilterQuery<T>, model: Collection<T>): Promise<T> {
 	const obj = await model.findOne(filter);
 	if (!obj)
 		throw new UserInputError(
 			`obj with filters: "${JSON.stringify(filter)}" not found in collection "${
-				model.collectionName
+			model.collectionName
 			}"`
 		);
 	return obj;
@@ -129,6 +137,7 @@ async function fetchUser(
 export interface Resolvers {
 	ApplicationField: Required<ApplicationFieldResolvers>;
 	ApplicationQuestion: Required<ApplicationQuestionResolvers>;
+	Event: Required<EventResolvers>;
 	Hacker: Required<HackerResolvers>;
 	Login: Required<LoginResolvers>;
 	Mentor: Required<MentorResolvers>;
@@ -177,6 +186,17 @@ export const resolvers: Resolvers = {
 		instruction: async question => (await question).instruction || null,
 		note: async question => (await question).note || null,
 		prompt: async question => (await question).prompt,
+	},
+	Event: {
+		end: async event => (await event).end.getTime(),
+		id: async event => (await event)._id.toHexString(),
+		location: async event => (await event).location,
+		start: async event => (await event).start.getTime(),
+		summary: async event => (await event).summary,
+		type: async event => {
+			const { type } = await event;
+			return toEventTypeEnum(type);
+		},
 	},
 	Hacker: {
 		...userResolvers,
@@ -325,6 +345,8 @@ export const resolvers: Resolvers = {
 		userType: () => UserType.Organizer,
 	},
 	Query: {
+		event: async (root, { id }, ctx: Context) => queryById(id, ctx.models.Events),
+		events: async (root, args, ctx: Context) => ctx.models.Events.find().toArray(),
 		hacker: async (root, { id }, ctx: Context) => queryById(id, ctx.models.Hackers),
 		hackers: async (root, args, ctx: Context) => ctx.models.Hackers.find().toArray(),
 		me: async (root, args, ctx: Context) => {

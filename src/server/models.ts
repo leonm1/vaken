@@ -2,6 +2,7 @@ import { MongoClient, Collection } from 'mongodb';
 import {
 	ApplicationFieldDbObject,
 	ApplicationQuestionDbObject,
+	EventDbObject,
 	HackerDbObject,
 	LoginDbObject,
 	MentorDbObject,
@@ -18,6 +19,7 @@ export interface UserTeamIndexDbObject {
 export interface Models {
 	ApplicationFields: Collection<ApplicationFieldDbObject>;
 	ApplicationQuestions: Collection<ApplicationQuestionDbObject>;
+	Events: Collection<EventDbObject>;
 	Hackers: Collection<HackerDbObject>;
 	Logins: Collection<LoginDbObject>;
 	Mentors: Collection<MentorDbObject>;
@@ -39,6 +41,7 @@ export const initDb = async (): Promise<Models> => {
 		 */
 		ApplicationFields: db.collection<ApplicationFieldDbObject>('applicationFields'),
 		ApplicationQuestions: db.collection<ApplicationQuestionDbObject>('applicationQuestions'),
+		Events: db.collection<EventDbObject>('events'),
 		Hackers: db.collection<HackerDbObject>('Hackers'),
 		Logins: db.collection<LoginDbObject>('logins'),
 		Mentors: db.collection<MentorDbObject>('mentors'),
